@@ -6,6 +6,10 @@ const routes = [
     path: '/',
     component: () => import('../pages/Home.vue')
   },
+  {
+    path: '/randomNum',
+    component: () => import('../pages/randomNum.vue')
+  }
 ]
 
 // 创建路由实例
