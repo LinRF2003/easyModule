@@ -13,23 +13,37 @@
         v-model="ruleForm.count"
         autocomplete="off"
         placeholder="生成随机数的个数，1-10000"
+        :disabled="isStart"
       />
     </el-form-item>
     <el-form-item label="随机数最小值" prop="minNum">
-      <el-input v-model="ruleForm.minNum" autocomplete="off" placeholder="生成的随机数最小值" />
+      <el-input
+        v-model="ruleForm.minNum"
+        autocomplete="off"
+        placeholder="生成的随机数最小值"
+        :disabled="isStart"
+      />
     </el-form-item>
     <el-form-item label="随机数最大值" prop="maxNum">
-      <el-input v-model="ruleForm.maxNum" autocomplete="off" placeholder="生成的随机数最大值" />
+      <el-input
+        v-model="ruleForm.maxNum"
+        autocomplete="off"
+        placeholder="生成的随机数最大值"
+        :disabled="isStart"
+      />
     </el-form-item>
+    <div>
+      生成结果：
+      <div class="random-box">
+        <div v-for="(i, index) in randomNumList" :key="index" class="random-item">{{ i }}</div>
+      </div>
+    </div>
     <el-form-item class="button-container">
-      <el-button type="primary" @click="submitForm()"> 生成 </el-button>
-      <el-button @click="resetForm()">重置</el-button>
+      <el-button type="primary" @click="submitForm()" v-if="!isStart"> 生成 </el-button>
+      <el-button type="danger" @click="stopRandom()" v-else> 结束 </el-button>
+      <el-button @click="resetForm()" :disabled="isStart">重置</el-button>
     </el-form-item>
   </el-form>
-  <div class="demo-ruleForm">
-    生成结果：
-    <div>111</div>
-  </div>
 </template>
 
 <script setup>
@@ -38,10 +52,14 @@ import message from '@/utils/Message'
 
 const ruleFormRef = ref()
 
-const ruleForm = reactive({})
+const ruleForm = reactive({ count: 1, minNum: 1, maxNum: 999 })
 
 const rules = reactive({})
 
+const isStart = ref(false) // 是否开始
+const timer = ref() // 定时器
+const randomNumList = ref(['000'])
+// 生成
 const submitForm = () => {
   if (!ruleFormRef.value) return
   ruleFormRef.value.validate((valid) => {
@@ -56,15 +74,12 @@ const submitForm = () => {
         return message.warning('最小值不能大于最大值')
 
       // 随机生成 count 个在 minNum 与 maxNum 之间的整数并返回
-      const randomNums = Array.from(
-        { length: ruleForm.count },
-        () =>
-          Math.floor(Math.random() * (ruleForm.maxNum - ruleForm.minNum + 1)) +
-          parseInt(ruleForm.minNum)
-      )
+      isStart.value = true
+      // 设置定时器生成变化的数字
+      timer.value = setInterval(() => {
+        randomNumList.value = getRandomNumFn()
+      }, 50)
 
-      // 显示在 DOM 元素中
-      document.querySelector('.demo-ruleForm > div').innerText = randomNums.join('，')
       // message.success('成功生成')
     } else {
       console.log('error submit!')
@@ -72,8 +87,29 @@ const submitForm = () => {
   })
 }
 
+// 结束
+const stopRandom = () => {
+  clearInterval(timer.value)
+  timer.value = ''
+  isStart.value = false
+  randomNumList.value = getRandomNumFn()
+}
+
+// 生成随机的方法
+const getRandomNumFn = () => {
+  const randomNums = Array.from(
+    { length: ruleForm.count },
+    () =>
+      Math.floor(Math.random() * (ruleForm.maxNum - ruleForm.minNum + 1)) +
+      parseInt(ruleForm.minNum)
+  )
+  return randomNums
+}
+
+// 重置
 const resetForm = () => {
   if (!ruleFormRef.value) return
+  randomNumList.value = ['000']
   ruleFormRef.value.resetFields()
 }
 </script>
@@ -83,6 +119,16 @@ const resetForm = () => {
   .el-form-item__content {
     display: flex;
     justify-content: center;
+  }
+}
+.random-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  .random-item {
+    font-size: 35px;
+    margin: 10px;
   }
 }
 </style>
