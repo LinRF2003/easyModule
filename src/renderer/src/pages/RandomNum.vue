@@ -47,11 +47,18 @@
       <el-button @click="resetForm()" :disabled="isStart">重置</el-button>
     </el-form-item>
   </el-form>
+
+  历史结果：
+  <div v-for="(i, index) in historyRandomData" :key="index">
+    结果：{{ i.data.join('，') }}
+    <span style="margin-left: 10px"> 时间：{{ i.time }} </span>
+  </div>
 </template>
 
 <script setup>
 import { reactive, ref } from 'vue'
 import message from '@/utils/Message'
+import { formatDate } from '@/utils/date'
 
 const formDataRef = ref()
 
@@ -59,6 +66,7 @@ const formData = reactive({ count: 1, minNum: 1, maxNum: 999 }) // form对象
 const configData = reactive({
   isOnly: false
 }) // 配置对象（是否唯一）
+const historyRandomData = ref([]) // 历史随机结果
 
 const rules = reactive({}) // 规则配置
 
@@ -98,7 +106,9 @@ const stopRandom = () => {
   clearInterval(timer.value)
   timer.value = ''
   isStart.value = false
-  randomNumList.value = getRandomNumFn()
+  const _data = getRandomNumFn()
+  randomNumList.value = _data
+  historyRandomData.value.unshift({ data: _data, time: formatDate(new Date().getTime()) })
 }
 
 // 生成随机的方法
@@ -117,8 +127,8 @@ const getRandomNumFn = () => {
         parseInt(formData.minNum)
       arr.add(randomNum)
     }
-
-    randomNums = arr
+    // 转换为数组
+    randomNums = [...arr]
   } else {
     randomNums = Array.from(
       { length: formData.count },
