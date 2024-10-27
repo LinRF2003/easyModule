@@ -8,7 +8,7 @@ const routes = [
   },
   {
     path: '/randomNum',
-    component: () => import('../pages/randomNum.vue')
+    component: () => import('../pages/RandomNum.vue')
   }
 ]
 
