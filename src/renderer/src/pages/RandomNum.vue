@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import message from '@/utils/Message'
 import { formatDate } from '@/utils/date'
 
@@ -109,6 +109,9 @@ const stopRandom = () => {
   const _data = getRandomNumFn()
   randomNumList.value = _data
   historyRandomData.value.unshift({ data: _data, time: formatDate(new Date().getTime()) })
+
+  // 保存数据
+  localStorage.setItem('historyRandomData', JSON.stringify(historyRandomData.value))
 }
 
 // 生成随机的方法
@@ -146,6 +149,14 @@ const resetForm = () => {
   randomNumList.value = ['000']
   formDataRef.value.resetFields()
 }
+
+// 首次加载时获取本地存储的数据
+onMounted(() => {
+  const historyData = localStorage.getItem('historyRandomData')
+  if (historyData) {
+    historyRandomData.value = JSON.parse(historyData)
+  }
+})
 </script>
 
 <style lang="less">
